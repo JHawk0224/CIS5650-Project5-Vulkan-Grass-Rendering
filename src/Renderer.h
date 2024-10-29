@@ -1,12 +1,12 @@
 #pragma once
 
-#include "Device.h"
-#include "SwapChain.h"
-#include "Scene.h"
 #include "Camera.h"
+#include "Device.h"
+#include "Scene.h"
+#include "SwapChain.h"
 
 class Renderer {
-public:
+   public:
     Renderer() = delete;
     Renderer(Device* device, SwapChain* swapChain, Scene* scene, Camera* camera);
     ~Renderer();
@@ -41,7 +41,7 @@ public:
 
     void Frame();
 
-private:
+   private:
     Device* device;
     VkDevice logicalDevice;
     SwapChain* swapChain;
@@ -56,7 +56,7 @@ private:
     VkDescriptorSetLayout cameraDescriptorSetLayout;
     VkDescriptorSetLayout modelDescriptorSetLayout;
     VkDescriptorSetLayout timeDescriptorSetLayout;
-    
+
     VkDescriptorPool descriptorPool;
 
     VkDescriptorSet cameraDescriptorSet;

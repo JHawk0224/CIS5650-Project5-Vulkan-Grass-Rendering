@@ -1,13 +1,12 @@
-#include <stdio.h>
 #include "Window.h"
 
+#include <stdio.h>
+
 namespace {
-    GLFWwindow* window = nullptr;
+GLFWwindow* window = nullptr;
 }
 
-GLFWwindow* GetGLFWWindow() {
-    return window;
-}
+GLFWwindow* GetGLFWWindow() { return window; }
 
 void InitializeWindow(int width, int height, const char* name) {
     if (!glfwInit()) {
@@ -15,7 +14,7 @@ void InitializeWindow(int width, int height, const char* name) {
         exit(EXIT_FAILURE);
     }
 
-    if (!glfwVulkanSupported()){
+    if (!glfwVulkanSupported()) {
         fprintf(stderr, "Vulkan not supported\n");
         exit(EXIT_FAILURE);
     }
@@ -30,9 +29,7 @@ void InitializeWindow(int width, int height, const char* name) {
     }
 }
 
-bool ShouldQuit() {
-    return !!glfwWindowShouldClose(window);
-}
+bool ShouldQuit() { return !!glfwWindowShouldClose(window); }
 
 void DestroyWindow() {
     glfwDestroyWindow(window);

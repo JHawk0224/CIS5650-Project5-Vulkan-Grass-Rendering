@@ -1,7 +1,9 @@
 #pragma once
 #include <vulkan/vulkan.h>
-#include <glm/glm.hpp>
+
 #include <array>
+#include <glm/glm.hpp>
+
 #include "Model.h"
 
 constexpr static unsigned int NUM_BLADES = 1 << 13;
@@ -70,7 +72,7 @@ struct BladeDrawIndirect {
 };
 
 class Blades : public Model {
-private:
+   private:
     VkBuffer bladesBuffer;
     VkBuffer culledBladesBuffer;
     VkBuffer numBladesBuffer;
@@ -79,7 +81,7 @@ private:
     VkDeviceMemory culledBladesBufferMemory;
     VkDeviceMemory numBladesBufferMemory;
 
-public:
+   public:
     Blades(Device* device, VkCommandPool commandPool, float planeDim);
     VkBuffer GetBladesBuffer() const;
     VkBuffer GetCulledBladesBuffer() const;

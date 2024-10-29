@@ -1,10 +1,10 @@
-#include <vector>
 #include "Blades.h"
+
+#include <vector>
+
 #include "BufferUtils.h"
 
-float generateRandomFloat() {
-    return rand() / (float)RAND_MAX;
-}
+float generateRandomFloat() { return rand() / (float)RAND_MAX; }
 
 Blades::Blades(Device* device, VkCommandPool commandPool, float planeDim) : Model(device, commandPool, {}, {}) {
     std::vector<Blade> blades;
@@ -44,22 +44,20 @@ Blades::Blades(Device* device, VkCommandPool commandPool, float planeDim) : Mode
     indirectDraw.firstVertex = 0;
     indirectDraw.firstInstance = 0;
 
-    BufferUtils::CreateBufferFromData(device, commandPool, blades.data(), NUM_BLADES * sizeof(Blade), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, bladesBuffer, bladesBufferMemory);
-    BufferUtils::CreateBuffer(device, NUM_BLADES * sizeof(Blade), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, culledBladesBuffer, culledBladesBufferMemory);
-    BufferUtils::CreateBufferFromData(device, commandPool, &indirectDraw, sizeof(BladeDrawIndirect), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT, numBladesBuffer, numBladesBufferMemory);
+    BufferUtils::CreateBufferFromData(device, commandPool, blades.data(), NUM_BLADES * sizeof(Blade),
+                                      VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, bladesBuffer, bladesBufferMemory);
+    BufferUtils::CreateBuffer(device, NUM_BLADES * sizeof(Blade), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+                              VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, culledBladesBuffer, culledBladesBufferMemory);
+    BufferUtils::CreateBufferFromData(device, commandPool, &indirectDraw, sizeof(BladeDrawIndirect),
+                                      VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT,
+                                      numBladesBuffer, numBladesBufferMemory);
 }
 
-VkBuffer Blades::GetBladesBuffer() const {
-    return bladesBuffer;
-}
+VkBuffer Blades::GetBladesBuffer() const { return bladesBuffer; }
 
-VkBuffer Blades::GetCulledBladesBuffer() const {
-    return culledBladesBuffer;
-}
+VkBuffer Blades::GetCulledBladesBuffer() const { return culledBladesBuffer; }
 
-VkBuffer Blades::GetNumBladesBuffer() const {
-    return numBladesBuffer;
-}
+VkBuffer Blades::GetNumBladesBuffer() const { return numBladesBuffer; }
 
 Blades::~Blades() {
     vkDestroyBuffer(device->GetVkDevice(), bladesBuffer, nullptr);

@@ -1,10 +1,10 @@
 #pragma once
 
-#include <glm/glm.hpp>
 #include <chrono>
+#include <glm/glm.hpp>
 
-#include "Model.h"
 #include "Blades.h"
+#include "Model.h"
 
 using namespace std::chrono;
 
@@ -14,28 +14,28 @@ struct Time {
 };
 
 class Scene {
-private:
+   private:
     Device* device;
-    
+
     VkBuffer timeBuffer;
     VkDeviceMemory timeBufferMemory;
     Time time;
-    
+
     void* mappedData;
 
     std::vector<Model*> models;
     std::vector<Blades*> blades;
 
-high_resolution_clock::time_point startTime = high_resolution_clock::now();
+    high_resolution_clock::time_point startTime = high_resolution_clock::now();
 
-public:
+   public:
     Scene() = delete;
     Scene(Device* device);
     ~Scene();
 
     const std::vector<Model*>& GetModels() const;
     const std::vector<Blades*>& GetBlades() const;
-    
+
     void AddModel(Model* model);
     void AddBlades(Blades* blades);
 

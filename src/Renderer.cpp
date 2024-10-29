@@ -1,20 +1,16 @@
 #include "Renderer.h"
-#include "Instance.h"
-#include "ShaderModule.h"
-#include "Vertex.h"
+
 #include "Blades.h"
 #include "Camera.h"
 #include "Image.h"
+#include "Instance.h"
+#include "ShaderModule.h"
+#include "Vertex.h"
 
 static constexpr unsigned int WORKGROUP_SIZE = 32;
 
 Renderer::Renderer(Device* device, SwapChain* swapChain, Scene* scene, Camera* camera)
-  : device(device),
-    logicalDevice(device->GetVkDevice()),
-    swapChain(swapChain),
-    scene(scene),
-    camera(camera) {
-
+    : device(device), logicalDevice(device->GetVkDevice()), swapChain(swapChain), scene(scene), camera(camera) {
     CreateCommandPools();
     CreateRenderPass();
     CreateCameraDescriptorSetLayout();
@@ -73,7 +69,9 @@ void Renderer::CreateRenderPass() {
     colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
     // Depth buffer attachment
-    VkFormat depthFormat = device->GetInstance()->GetSupportedFormat({ VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT }, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+    VkFormat depthFormat = device->GetInstance()->GetSupportedFormat(
+        {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT}, VK_IMAGE_TILING_OPTIMAL,
+        VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
     VkAttachmentDescription depthAttachment = {};
     depthAttachment.format = depthFormat;
     depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -96,7 +94,7 @@ void Renderer::CreateRenderPass() {
     subpass.pColorAttachments = &colorAttachmentRef;
     subpass.pDepthStencilAttachment = &depthAttachmentRef;
 
-    std::array<VkAttachmentDescription, 2> attachments = { colorAttachment, depthAttachment };
+    std::array<VkAttachmentDescription, 2> attachments = {colorAttachment, depthAttachment};
 
     // Specify subpass dependency
     VkSubpassDependency dependency = {};
@@ -131,7 +129,7 @@ void Renderer::CreateCameraDescriptorSetLayout() {
     uboLayoutBinding.stageFlags = VK_SHADER_STAGE_ALL;
     uboLayoutBinding.pImmutableSamplers = nullptr;
 
-    std::vector<VkDescriptorSetLayoutBinding> bindings = { uboLayoutBinding };
+    std::vector<VkDescriptorSetLayoutBinding> bindings = {uboLayoutBinding};
 
     // Create the descriptor set layout
     VkDescriptorSetLayoutCreateInfo layoutInfo = {};
@@ -159,7 +157,7 @@ void Renderer::CreateModelDescriptorSetLayout() {
     samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
     samplerLayoutBinding.pImmutableSamplers = nullptr;
 
-    std::vector<VkDescriptorSetLayoutBinding> bindings = { uboLayoutBinding, samplerLayoutBinding };
+    std::vector<VkDescriptorSetLayoutBinding> bindings = {uboLayoutBinding, samplerLayoutBinding};
 
     // Create the descriptor set layout
     VkDescriptorSetLayoutCreateInfo layoutInfo = {};
@@ -181,7 +179,7 @@ void Renderer::CreateTimeDescriptorSetLayout() {
     uboLayoutBinding.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
     uboLayoutBinding.pImmutableSamplers = nullptr;
 
-    std::vector<VkDescriptorSetLayoutBinding> bindings = { uboLayoutBinding };
+    std::vector<VkDescriptorSetLayoutBinding> bindings = {uboLayoutBinding};
 
     // Create the descriptor set layout
     VkDescriptorSetLayoutCreateInfo layoutInfo = {};
@@ -204,16 +202,18 @@ void Renderer::CreateDescriptorPool() {
     // Describe which descriptor types that the descriptor sets will contain
     std::vector<VkDescriptorPoolSize> poolSizes = {
         // Camera
-        { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER , 1},
+        {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1},
 
         // Models + Blades
-        { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER , static_cast<uint32_t>(scene->GetModels().size() + scene->GetBlades().size()) },
+        {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+         static_cast<uint32_t>(scene->GetModels().size() + scene->GetBlades().size())},
 
         // Models + Blades
-        { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER , static_cast<uint32_t>(scene->GetModels().size() + scene->GetBlades().size()) },
+        {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+         static_cast<uint32_t>(scene->GetModels().size() + scene->GetBlades().size())},
 
         // Time (compute)
-        { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER , 1 },
+        {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1},
 
         // TODO: Add any additional types and counts of descriptors you will need to allocate
     };
@@ -231,7 +231,7 @@ void Renderer::CreateDescriptorPool() {
 
 void Renderer::CreateCameraDescriptorSet() {
     // Describe the desciptor set
-    VkDescriptorSetLayout layouts[] = { cameraDescriptorSetLayout };
+    VkDescriptorSetLayout layouts[] = {cameraDescriptorSetLayout};
     VkDescriptorSetAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     allocInfo.descriptorPool = descriptorPool;
@@ -261,14 +261,15 @@ void Renderer::CreateCameraDescriptorSet() {
     descriptorWrites[0].pTexelBufferView = nullptr;
 
     // Update descriptor sets
-    vkUpdateDescriptorSets(logicalDevice, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+    vkUpdateDescriptorSets(logicalDevice, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0,
+                           nullptr);
 }
 
 void Renderer::CreateModelDescriptorSets() {
     modelDescriptorSets.resize(scene->GetModels().size());
 
     // Describe the desciptor set
-    VkDescriptorSetLayout layouts[] = { modelDescriptorSetLayout };
+    VkDescriptorSetLayout layouts[] = {modelDescriptorSetLayout};
     VkDescriptorSetAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     allocInfo.descriptorPool = descriptorPool;
@@ -314,7 +315,8 @@ void Renderer::CreateModelDescriptorSets() {
     }
 
     // Update descriptor sets
-    vkUpdateDescriptorSets(logicalDevice, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+    vkUpdateDescriptorSets(logicalDevice, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0,
+                           nullptr);
 }
 
 void Renderer::CreateGrassDescriptorSets() {
@@ -324,7 +326,7 @@ void Renderer::CreateGrassDescriptorSets() {
 
 void Renderer::CreateTimeDescriptorSet() {
     // Describe the desciptor set
-    VkDescriptorSetLayout layouts[] = { timeDescriptorSetLayout };
+    VkDescriptorSetLayout layouts[] = {timeDescriptorSetLayout};
     VkDescriptorSetAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     allocInfo.descriptorPool = descriptorPool;
@@ -354,12 +356,14 @@ void Renderer::CreateTimeDescriptorSet() {
     descriptorWrites[0].pTexelBufferView = nullptr;
 
     // Update descriptor sets
-    vkUpdateDescriptorSets(logicalDevice, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+    vkUpdateDescriptorSets(logicalDevice, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0,
+                           nullptr);
 }
 
 void Renderer::CreateComputeDescriptorSets() {
     // TODO: Create Descriptor sets for the compute pipeline
-    // The descriptors should point to Storage buffers which will hold the grass blades, the culled grass blades, and the output number of grass blades 
+    // The descriptors should point to Storage buffers which will hold the grass blades, the culled grass blades, and
+    // the output number of grass blades
 }
 
 void Renderer::CreateGraphicsPipeline() {
@@ -379,7 +383,7 @@ void Renderer::CreateGraphicsPipeline() {
     fragShaderStageInfo.module = fragShaderModule;
     fragShaderStageInfo.pName = "main";
 
-    VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
+    VkPipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo, fragShaderStageInfo};
 
     // --- Set up fixed-function stages ---
 
@@ -411,7 +415,7 @@ void Renderer::CreateGraphicsPipeline() {
     viewport.maxDepth = 1.0f;
 
     VkRect2D scissor = {};
-    scissor.offset = { 0, 0 };
+    scissor.offset = {0, 0};
     scissor.extent = swapChain->GetVkExtent();
 
     VkPipelineViewportStateCreateInfo viewportState = {};
@@ -459,7 +463,8 @@ void Renderer::CreateGraphicsPipeline() {
     // Color blending (turned off here, but showing options for learning)
     // --> Configuration per attached framebuffer
     VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
-    colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+    colorBlendAttachment.colorWriteMask =
+        VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
     colorBlendAttachment.blendEnable = VK_FALSE;
     colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
     colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
@@ -480,7 +485,7 @@ void Renderer::CreateGraphicsPipeline() {
     colorBlending.blendConstants[2] = 0.0f;
     colorBlending.blendConstants[3] = 0.0f;
 
-    std::vector<VkDescriptorSetLayout> descriptorSetLayouts = { cameraDescriptorSetLayout, modelDescriptorSetLayout };
+    std::vector<VkDescriptorSetLayout> descriptorSetLayouts = {cameraDescriptorSetLayout, modelDescriptorSetLayout};
 
     // Pipeline layout: used to specify uniform values
     VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
@@ -513,7 +518,8 @@ void Renderer::CreateGraphicsPipeline() {
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
     pipelineInfo.basePipelineIndex = -1;
 
-    if (vkCreateGraphicsPipelines(logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
+    if (vkCreateGraphicsPipelines(logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) !=
+        VK_SUCCESS) {
         throw std::runtime_error("Failed to create graphics pipeline");
     }
 
@@ -553,7 +559,8 @@ void Renderer::CreateGrassPipeline() {
     fragShaderStageInfo.module = fragShaderModule;
     fragShaderStageInfo.pName = "main";
 
-    VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, tescShaderStageInfo, teseShaderStageInfo, fragShaderStageInfo };
+    VkPipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo, tescShaderStageInfo, teseShaderStageInfo,
+                                                      fragShaderStageInfo};
 
     // --- Set up fixed-function stages ---
 
@@ -585,7 +592,7 @@ void Renderer::CreateGrassPipeline() {
     viewport.maxDepth = 1.0f;
 
     VkRect2D scissor = {};
-    scissor.offset = { 0, 0 };
+    scissor.offset = {0, 0};
     scissor.extent = swapChain->GetVkExtent();
 
     VkPipelineViewportStateCreateInfo viewportState = {};
@@ -633,7 +640,8 @@ void Renderer::CreateGrassPipeline() {
     // Color blending (turned off here, but showing options for learning)
     // --> Configuration per attached framebuffer
     VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
-    colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+    colorBlendAttachment.colorWriteMask =
+        VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
     colorBlendAttachment.blendEnable = VK_FALSE;
     colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
     colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
@@ -654,7 +662,7 @@ void Renderer::CreateGrassPipeline() {
     colorBlending.blendConstants[2] = 0.0f;
     colorBlending.blendConstants[3] = 0.0f;
 
-    std::vector<VkDescriptorSetLayout> descriptorSetLayouts = { cameraDescriptorSetLayout, modelDescriptorSetLayout };
+    std::vector<VkDescriptorSetLayout> descriptorSetLayouts = {cameraDescriptorSetLayout, modelDescriptorSetLayout};
 
     // Pipeline layout: used to specify uniform values
     VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
@@ -695,7 +703,8 @@ void Renderer::CreateGrassPipeline() {
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
     pipelineInfo.basePipelineIndex = -1;
 
-    if (vkCreateGraphicsPipelines(logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &grassPipeline) != VK_SUCCESS) {
+    if (vkCreateGraphicsPipelines(logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &grassPipeline) !=
+        VK_SUCCESS) {
         throw std::runtime_error("Failed to create graphics pipeline");
     }
 
@@ -717,7 +726,7 @@ void Renderer::CreateComputePipeline() {
     computeShaderStageInfo.pName = "main";
 
     // TODO: Add the compute dsecriptor set layout you create to this list
-    std::vector<VkDescriptorSetLayout> descriptorSetLayouts = { cameraDescriptorSetLayout, timeDescriptorSetLayout };
+    std::vector<VkDescriptorSetLayout> descriptorSetLayouts = {cameraDescriptorSetLayout, timeDescriptorSetLayout};
 
     // Create pipeline layout
     VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
@@ -741,7 +750,8 @@ void Renderer::CreateComputePipeline() {
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
     pipelineInfo.basePipelineIndex = -1;
 
-    if (vkCreateComputePipelines(logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &computePipeline) != VK_SUCCESS) {
+    if (vkCreateComputePipelines(logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &computePipeline) !=
+        VK_SUCCESS) {
         throw std::runtime_error("Failed to create compute pipeline");
     }
 
@@ -781,32 +791,24 @@ void Renderer::CreateFrameResources() {
         }
     }
 
-    VkFormat depthFormat = device->GetInstance()->GetSupportedFormat({ VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT }, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+    VkFormat depthFormat = device->GetInstance()->GetSupportedFormat(
+        {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT}, VK_IMAGE_TILING_OPTIMAL,
+        VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
     // CREATE DEPTH IMAGE
-    Image::Create(device,
-        swapChain->GetVkExtent().width,
-        swapChain->GetVkExtent().height,
-        depthFormat,
-        VK_IMAGE_TILING_OPTIMAL,
-        VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
-        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-        depthImage,
-        depthImageMemory
-    );
+    Image::Create(device, swapChain->GetVkExtent().width, swapChain->GetVkExtent().height, depthFormat,
+                  VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+                  VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthImage, depthImageMemory);
 
     depthImageView = Image::CreateView(device, depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
-    
-    // Transition the image for use as depth-stencil
-    Image::TransitionLayout(device, graphicsCommandPool, depthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 
-    
+    // Transition the image for use as depth-stencil
+    Image::TransitionLayout(device, graphicsCommandPool, depthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED,
+                            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+
     // CREATE FRAMEBUFFERS
     framebuffers.resize(swapChain->GetCount());
     for (size_t i = 0; i < swapChain->GetCount(); i++) {
-        std::vector<VkImageView> attachments = {
-            imageViews[i],
-            depthImageView
-        };
+        std::vector<VkImageView> attachments = {imageViews[i], depthImageView};
 
         VkFramebufferCreateInfo framebufferInfo = {};
         framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -820,7 +822,6 @@ void Renderer::CreateFrameResources() {
         if (vkCreateFramebuffer(logicalDevice, &framebufferInfo, nullptr, &framebuffers[i]) != VK_SUCCESS) {
             throw std::runtime_error("Failed to create framebuffer");
         }
-
     }
 }
 
@@ -843,7 +844,8 @@ void Renderer::RecreateFrameResources() {
     vkDestroyPipeline(logicalDevice, grassPipeline, nullptr);
     vkDestroyPipelineLayout(logicalDevice, graphicsPipelineLayout, nullptr);
     vkDestroyPipelineLayout(logicalDevice, grassPipelineLayout, nullptr);
-    vkFreeCommandBuffers(logicalDevice, graphicsCommandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
+    vkFreeCommandBuffers(logicalDevice, graphicsCommandPool, static_cast<uint32_t>(commandBuffers.size()),
+                         commandBuffers.data());
 
     DestroyFrameResources();
     CreateFrameResources();
@@ -878,10 +880,12 @@ void Renderer::RecordComputeCommandBuffer() {
     vkCmdBindPipeline(computeCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, computePipeline);
 
     // Bind camera descriptor set
-    vkCmdBindDescriptorSets(computeCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, computePipelineLayout, 0, 1, &cameraDescriptorSet, 0, nullptr);
+    vkCmdBindDescriptorSets(computeCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, computePipelineLayout, 0, 1,
+                            &cameraDescriptorSet, 0, nullptr);
 
     // Bind descriptor set for time uniforms
-    vkCmdBindDescriptorSets(computeCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, computePipelineLayout, 1, 1, &timeDescriptorSet, 0, nullptr);
+    vkCmdBindDescriptorSets(computeCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, computePipelineLayout, 1, 1,
+                            &timeDescriptorSet, 0, nullptr);
 
     // TODO: For each group of blades bind its descriptor set and dispatch
 
@@ -922,12 +926,12 @@ void Renderer::RecordCommandBuffers() {
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
         renderPassInfo.renderPass = renderPass;
         renderPassInfo.framebuffer = framebuffers[i];
-        renderPassInfo.renderArea.offset = { 0, 0 };
+        renderPassInfo.renderArea.offset = {0, 0};
         renderPassInfo.renderArea.extent = swapChain->GetVkExtent();
 
         std::array<VkClearValue, 2> clearValues = {};
-        clearValues[0].color = { 0.0f, 0.0f, 0.0f, 1.0f };
-        clearValues[1].depthStencil = { 1.0f, 0 };
+        clearValues[0].color = {0.0f, 0.0f, 0.0f, 1.0f};
+        clearValues[1].depthStencil = {1.0f, 0};
         renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
         renderPassInfo.pClearValues = clearValues.data();
 
@@ -943,10 +947,13 @@ void Renderer::RecordCommandBuffers() {
             barriers[j].size = sizeof(BladeDrawIndirect);
         }
 
-        vkCmdPipelineBarrier(commandBuffers[i], VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT, 0, 0, nullptr, barriers.size(), barriers.data(), 0, nullptr);
+        vkCmdPipelineBarrier(commandBuffers[i], VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+                             VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT, 0, 0, nullptr, barriers.size(), barriers.data(), 0,
+                             nullptr);
 
         // Bind the camera descriptor set. This is set 0 in all pipelines so it will be inherited
-        vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipelineLayout, 0, 1, &cameraDescriptorSet, 0, nullptr);
+        vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipelineLayout, 0, 1,
+                                &cameraDescriptorSet, 0, nullptr);
 
         vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
@@ -955,14 +962,15 @@ void Renderer::RecordCommandBuffers() {
 
         for (uint32_t j = 0; j < scene->GetModels().size(); ++j) {
             // Bind the vertex and index buffers
-            VkBuffer vertexBuffers[] = { scene->GetModels()[j]->getVertexBuffer() };
-            VkDeviceSize offsets[] = { 0 };
+            VkBuffer vertexBuffers[] = {scene->GetModels()[j]->getVertexBuffer()};
+            VkDeviceSize offsets[] = {0};
             vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
 
             vkCmdBindIndexBuffer(commandBuffers[i], scene->GetModels()[j]->getIndexBuffer(), 0, VK_INDEX_TYPE_UINT32);
 
             // Bind the descriptor set for each model
-            vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipelineLayout, 1, 1, &modelDescriptorSets[j], 0, nullptr);
+            vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipelineLayout, 1, 1,
+                                    &modelDescriptorSets[j], 0, nullptr);
 
             // Draw
             std::vector<uint32_t> indices = scene->GetModels()[j]->getIndices();
@@ -973,8 +981,8 @@ void Renderer::RecordCommandBuffers() {
         vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, grassPipeline);
 
         for (uint32_t j = 0; j < scene->GetBlades().size(); ++j) {
-            VkBuffer vertexBuffers[] = { scene->GetBlades()[j]->GetCulledBladesBuffer() };
-            VkDeviceSize offsets[] = { 0 };
+            VkBuffer vertexBuffers[] = {scene->GetBlades()[j]->GetCulledBladesBuffer()};
+            VkDeviceSize offsets[] = {0};
             // TODO: Uncomment this when the buffers are populated
             // vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
 
@@ -982,7 +990,8 @@ void Renderer::RecordCommandBuffers() {
 
             // Draw
             // TODO: Uncomment this when the buffers are populated
-            // vkCmdDrawIndirect(commandBuffers[i], scene->GetBlades()[j]->GetNumBladesBuffer(), 0, 1, sizeof(BladeDrawIndirect));
+            // vkCmdDrawIndirect(commandBuffers[i], scene->GetBlades()[j]->GetNumBladesBuffer(), 0, 1,
+            // sizeof(BladeDrawIndirect));
         }
 
         // End render pass
@@ -996,7 +1005,6 @@ void Renderer::RecordCommandBuffers() {
 }
 
 void Renderer::Frame() {
-
     VkSubmitInfo computeSubmitInfo = {};
     computeSubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
@@ -1016,8 +1024,8 @@ void Renderer::Frame() {
     VkSubmitInfo submitInfo = {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-    VkSemaphore waitSemaphores[] = { swapChain->GetImageAvailableVkSemaphore() };
-    VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+    VkSemaphore waitSemaphores[] = {swapChain->GetImageAvailableVkSemaphore()};
+    VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
     submitInfo.waitSemaphoreCount = 1;
     submitInfo.pWaitSemaphores = waitSemaphores;
     submitInfo.pWaitDstStageMask = waitStages;
@@ -1025,7 +1033,7 @@ void Renderer::Frame() {
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &commandBuffers[swapChain->GetIndex()];
 
-    VkSemaphore signalSemaphores[] = { swapChain->GetRenderFinishedVkSemaphore() };
+    VkSemaphore signalSemaphores[] = {swapChain->GetRenderFinishedVkSemaphore()};
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
 
@@ -1043,9 +1051,10 @@ Renderer::~Renderer() {
 
     // TODO: destroy any resources you created
 
-    vkFreeCommandBuffers(logicalDevice, graphicsCommandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
+    vkFreeCommandBuffers(logicalDevice, graphicsCommandPool, static_cast<uint32_t>(commandBuffers.size()),
+                         commandBuffers.data());
     vkFreeCommandBuffers(logicalDevice, computeCommandPool, 1, &computeCommandBuffer);
-    
+
     vkDestroyPipeline(logicalDevice, graphicsPipeline, nullptr);
     vkDestroyPipeline(logicalDevice, grassPipeline, nullptr);
     vkDestroyPipeline(logicalDevice, computePipeline, nullptr);

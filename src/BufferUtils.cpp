@@ -1,7 +1,9 @@
 #include "BufferUtils.h"
+
 #include "Instance.h"
 
-void BufferUtils::CreateBuffer(Device* device, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory) {
+void BufferUtils::CreateBuffer(Device* device, VkDeviceSize size, VkBufferUsageFlags usage,
+                               VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory) {
     // Create buffer
     VkBufferCreateInfo bufferInfo = {};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -24,14 +26,15 @@ void BufferUtils::CreateBuffer(Device* device, VkDeviceSize size, VkBufferUsageF
     allocInfo.memoryTypeIndex = device->GetInstance()->GetMemoryTypeIndex(memRequirements.memoryTypeBits, properties);
 
     if (vkAllocateMemory(device->GetVkDevice(), &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
-      throw std::runtime_error("Failed to allocate vertex buffer");
+        throw std::runtime_error("Failed to allocate vertex buffer");
     }
 
     // Associate allocated memory with vertex buffer
     vkBindBufferMemory(device->GetVkDevice(), buffer, bufferMemory, 0);
 }
 
-void BufferUtils::CopyBuffer(Device* device, VkCommandPool commandPool, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) {
+void BufferUtils::CopyBuffer(Device* device, VkCommandPool commandPool, VkBuffer srcBuffer, VkBuffer dstBuffer,
+                             VkDeviceSize size) {
     VkCommandBufferAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
@@ -63,17 +66,20 @@ void BufferUtils::CopyBuffer(Device* device, VkCommandPool commandPool, VkBuffer
     vkFreeCommandBuffers(device->GetVkDevice(), commandPool, 1, &commandBuffer);
 }
 
-void BufferUtils::CreateBufferFromData(Device* device, VkCommandPool commandPool, void* bufferData, VkDeviceSize bufferSize, VkBufferUsageFlags bufferUsage, VkBuffer& buffer, VkDeviceMemory& bufferMemory) {
+void BufferUtils::CreateBufferFromData(Device* device, VkCommandPool commandPool, void* bufferData,
+                                       VkDeviceSize bufferSize, VkBufferUsageFlags bufferUsage, VkBuffer& buffer,
+                                       VkDeviceMemory& bufferMemory) {
     // Create the staging buffer
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingBufferMemory;
 
     VkBufferUsageFlags stagingUsage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-    VkMemoryPropertyFlags stagingProperties = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+    VkMemoryPropertyFlags stagingProperties =
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
     BufferUtils::CreateBuffer(device, bufferSize, stagingUsage, stagingProperties, stagingBuffer, stagingBufferMemory);
 
     // Fill the staging buffer
-    void *data;
+    void* data;
     vkMapMemory(device->GetVkDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
     memcpy(data, bufferData, static_cast<size_t>(bufferSize));
     vkUnmapMemory(device->GetVkDevice(), stagingBufferMemory);

@@ -1,18 +1,19 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
+
 #include <glm/glm.hpp>
 #include <vector>
 
-#include "Vertex.h"
 #include "Device.h"
+#include "Vertex.h"
 
 struct ModelBufferObject {
     glm::mat4 modelMatrix;
 };
 
 class Model {
-protected:
+   protected:
     Device* device;
 
     std::vector<Vertex> vertices;
@@ -32,9 +33,10 @@ protected:
     VkImageView textureView = VK_NULL_HANDLE;
     VkSampler textureSampler = VK_NULL_HANDLE;
 
-public:
+   public:
     Model() = delete;
-    Model(Device* device, VkCommandPool commandPool, const std::vector<Vertex> &vertices, const std::vector<uint32_t> &indices);
+    Model(Device* device, VkCommandPool commandPool, const std::vector<Vertex>& vertices,
+          const std::vector<uint32_t>& indices);
     virtual ~Model();
 
     void SetTexture(VkImage texture);
