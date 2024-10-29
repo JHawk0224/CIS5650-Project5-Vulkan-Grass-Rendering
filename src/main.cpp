@@ -1,10 +1,11 @@
 #include <vulkan/vulkan.h>
-#include "Instance.h"
-#include "Window.h"
-#include "Renderer.h"
+
 #include "Camera.h"
-#include "Scene.h"
 #include "Image.h"
+#include "Instance.h"
+#include "Renderer.h"
+#include "Scene.h"
+#include "Window.h"
 
 Device* device;
 SwapChain* swapChain;
@@ -12,58 +13,56 @@ Renderer* renderer;
 Camera* camera;
 
 namespace {
-    void resizeCallback(GLFWwindow* window, int width, int height) {
-        if (width == 0 || height == 0) return;
+void resizeCallback(GLFWwindow* window, int width, int height) {
+    if (width == 0 || height == 0) return;
 
-        vkDeviceWaitIdle(device->GetVkDevice());
-        swapChain->Recreate();
-        renderer->RecreateFrameResources();
-    }
+    vkDeviceWaitIdle(device->GetVkDevice());
+    swapChain->Recreate(width, height);
+    renderer->RecreateFrameResources();
+}
 
-    bool leftMouseDown = false;
-    bool rightMouseDown = false;
-    double previousX = 0.0;
-    double previousY = 0.0;
+bool leftMouseDown = false;
+bool rightMouseDown = false;
+double previousX = 0.0;
+double previousY = 0.0;
 
-    void mouseDownCallback(GLFWwindow* window, int button, int action, int mods) {
-        if (button == GLFW_MOUSE_BUTTON_LEFT) {
-            if (action == GLFW_PRESS) {
-                leftMouseDown = true;
-                glfwGetCursorPos(window, &previousX, &previousY);
-            }
-            else if (action == GLFW_RELEASE) {
-                leftMouseDown = false;
-            }
-        } else if (button == GLFW_MOUSE_BUTTON_RIGHT) {
-            if (action == GLFW_PRESS) {
-                rightMouseDown = true;
-                glfwGetCursorPos(window, &previousX, &previousY);
-            }
-            else if (action == GLFW_RELEASE) {
-                rightMouseDown = false;
-            }
+void mouseDownCallback(GLFWwindow* window, int button, int action, int mods) {
+    if (button == GLFW_MOUSE_BUTTON_LEFT) {
+        if (action == GLFW_PRESS) {
+            leftMouseDown = true;
+            glfwGetCursorPos(window, &previousX, &previousY);
+        } else if (action == GLFW_RELEASE) {
+            leftMouseDown = false;
         }
-    }
-
-    void mouseMoveCallback(GLFWwindow* window, double xPosition, double yPosition) {
-        if (leftMouseDown) {
-            double sensitivity = 0.5;
-            float deltaX = static_cast<float>((previousX - xPosition) * sensitivity);
-            float deltaY = static_cast<float>((previousY - yPosition) * sensitivity);
-
-            camera->UpdateOrbit(deltaX, deltaY, 0.0f);
-
-            previousX = xPosition;
-            previousY = yPosition;
-        } else if (rightMouseDown) {
-            double deltaZ = static_cast<float>((previousY - yPosition) * 0.05);
-
-            camera->UpdateOrbit(0.0f, 0.0f, deltaZ);
-
-            previousY = yPosition;
+    } else if (button == GLFW_MOUSE_BUTTON_RIGHT) {
+        if (action == GLFW_PRESS) {
+            rightMouseDown = true;
+            glfwGetCursorPos(window, &previousX, &previousY);
+        } else if (action == GLFW_RELEASE) {
+            rightMouseDown = false;
         }
     }
 }
+
+void mouseMoveCallback(GLFWwindow* window, double xPosition, double yPosition) {
+    if (leftMouseDown) {
+        double sensitivity = 0.5;
+        float deltaX = static_cast<float>((previousX - xPosition) * sensitivity);
+        float deltaY = static_cast<float>((previousY - yPosition) * sensitivity);
+
+        camera->UpdateOrbit(deltaX, deltaY, 0.0f);
+
+        previousX = xPosition;
+        previousY = yPosition;
+    } else if (rightMouseDown) {
+        double deltaZ = static_cast<float>((previousY - yPosition) * 0.05);
+
+        camera->UpdateOrbit(0.0f, 0.0f, deltaZ);
+
+        previousY = yPosition;
+    }
+}
+}  // namespace
 
 int main() {
     static constexpr char* applicationName = "Vulkan Grass Rendering";
@@ -79,14 +78,19 @@ int main() {
         throw std::runtime_error("Failed to create window surface");
     }
 
-    instance->PickPhysicalDevice({ VK_KHR_SWAPCHAIN_EXTENSION_NAME }, QueueFlagBit::GraphicsBit | QueueFlagBit::TransferBit | QueueFlagBit::ComputeBit | QueueFlagBit::PresentBit, surface);
+    instance->PickPhysicalDevice(
+        {VK_KHR_SWAPCHAIN_EXTENSION_NAME},
+        QueueFlagBit::GraphicsBit | QueueFlagBit::TransferBit | QueueFlagBit::ComputeBit | QueueFlagBit::PresentBit,
+        surface);
 
     VkPhysicalDeviceFeatures deviceFeatures = {};
     deviceFeatures.tessellationShader = VK_TRUE;
     deviceFeatures.fillModeNonSolid = VK_TRUE;
     deviceFeatures.samplerAnisotropy = VK_TRUE;
 
-    device = instance->CreateDevice(QueueFlagBit::GraphicsBit | QueueFlagBit::TransferBit | QueueFlagBit::ComputeBit | QueueFlagBit::PresentBit, deviceFeatures);
+    device = instance->CreateDevice(
+        QueueFlagBit::GraphicsBit | QueueFlagBit::TransferBit | QueueFlagBit::ComputeBit | QueueFlagBit::PresentBit,
+        deviceFeatures);
 
     swapChain = device->CreateSwapChain(surface, 5);
 
@@ -104,31 +108,20 @@ int main() {
 
     VkImage grassImage;
     VkDeviceMemory grassImageMemory;
-    Image::FromFile(device,
-        transferCommandPool,
-        "images/grass.jpg",
-        VK_FORMAT_R8G8B8A8_UNORM,
-        VK_IMAGE_TILING_OPTIMAL,
-        VK_IMAGE_USAGE_SAMPLED_BIT,
-        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-        grassImage,
-        grassImageMemory
-    );
+    Image::FromFile(device, transferCommandPool, "images/grass.jpg", VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL,
+                    VK_IMAGE_USAGE_SAMPLED_BIT, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                    VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, grassImage, grassImageMemory);
 
     float planeDim = 15.f;
     float halfWidth = planeDim * 0.5f;
     Model* plane = new Model(device, transferCommandPool,
-        {
-            { { -halfWidth, 0.0f, halfWidth }, { 1.0f, 0.0f, 0.0f },{ 1.0f, 0.0f } },
-            { { halfWidth, 0.0f, halfWidth }, { 0.0f, 1.0f, 0.0f },{ 0.0f, 0.0f } },
-            { { halfWidth, 0.0f, -halfWidth }, { 0.0f, 0.0f, 1.0f },{ 0.0f, 1.0f } },
-            { { -halfWidth, 0.0f, -halfWidth }, { 1.0f, 1.0f, 1.0f },{ 1.0f, 1.0f } }
-        },
-        { 0, 1, 2, 2, 3, 0 }
-    );
+                             {{{-halfWidth, 0.0f, halfWidth}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
+                              {{halfWidth, 0.0f, halfWidth}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
+                              {{halfWidth, 0.0f, -halfWidth}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
+                              {{-halfWidth, 0.0f, -halfWidth}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}},
+                             {0, 1, 2, 2, 3, 0});
     plane->SetTexture(grassImage);
-    
+
     Blades* blades = new Blades(device, transferCommandPool, planeDim);
 
     vkDestroyCommandPool(device->GetVkDevice(), transferCommandPool, nullptr);

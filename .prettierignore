@@ -1,0 +1,11 @@
+*.md
+*.txt
+external
+cmake
+*.json
+*.comp
+*.frag
+*.vert
+*.tese
+*.tesc
+*.geom

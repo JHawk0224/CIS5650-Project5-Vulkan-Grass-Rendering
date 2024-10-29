@@ -1,13 +1,14 @@
 #pragma once
 
 #include <vector>
+
 #include "Device.h"
 
 class Device;
 class SwapChain {
     friend class Device;
 
-public:
+   public:
     VkSwapchainKHR GetVkSwapChain() const;
     VkFormat GetVkImageFormat() const;
     VkExtent2D GetVkExtent() const;
@@ -16,15 +17,15 @@ public:
     VkImage GetVkImage(uint32_t index) const;
     VkSemaphore GetImageAvailableVkSemaphore() const;
     VkSemaphore GetRenderFinishedVkSemaphore() const;
-    
-    void Recreate();
+
+    void Recreate(int w = 0, int h = 0);
     bool Acquire();
     bool Present();
     ~SwapChain();
 
-private:
+   private:
     SwapChain(Device* device, VkSurfaceKHR vkSurface, unsigned int numBuffers);
-    void Create();
+    void Create(int w = 0, int h = 0);
     void Destroy();
 
     Device* device;
