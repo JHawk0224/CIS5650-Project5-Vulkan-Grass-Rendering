@@ -1,12 +1,24 @@
-Vulkan Grass Rendering
-==================================
+# Vulkan Grass Rendering
+========================
 
-**University of Pennsylvania, CIS 565: GPU Programming and Architecture, Project 5**
+**University of Pennsylvania, CIS 5650: GPU Programming and Architecture, Project 5 - Vulkan Grass Rendering**
 
-* (TODO) YOUR NAME HERE
-* Tested on: (TODO) Windows 22, i7-2222 @ 2.22GHz 22GB, GTX 222 222MB (Moore 2222 Lab)
+- Jordan Hochman
+  - [LinkedIn](https://www.linkedin.com/in/jhochman24), [Personal Website](https://jordanh.xyz), [GitHub](https://github.com/JHawk0224)
+- Tested on: Windows 11, Ryzen 7 5800 @ 3.4GHz 32GB, GeForce RTX 3060 Ti 8GB (Compute Capability: 8.6)
 
-### (TODO: Your README)
+## Welcome to my Vulkan Grass Rendering Project!
 
-*DO NOT* leave the README to the last minute! It is a crucial part of the
-project, and we will not be able to grade you without a good README.
+In this project, I implemented a grass renderer in Vulkan following this [Responsive Real-Time Grass Rendering for General 3D Scenes](https://www.cg.tuwien.ac.at/research/publications/2017/JAHRMANN-2017-RRTG/JAHRMANN-2017-RRTG-draft.pdf) paper. It models each blade of grass as a triangle affected by 3 forces, gravity, the resistance of the blade, and the wind. More details about the exact implementation of these forces can be found in `INSTRUCTION.md` [here](INSTRUCTION.md).
+
+### Demo Video/GIF
+
+[![](images/deferred-5000.gif)](images/demo-video.mp4)
+
+Here is a [demo video](images/demo-video.mp4) of it running. Note that the FPS cap/framiness is due to the video itself, and not the actual graphics pipeline. The video only has so many frames per second, so instead, look at the FPS counter in the top left. The same is true for all of the other GIFs in this README.
+
+- brief description of project and specific features implemented
+- GIFs at different stages with features added incrementally
+- Performance analysis:
+  - How handles varying number of blades
+  - Improvement by culling with each test
