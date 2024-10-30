@@ -14,11 +14,11 @@
 #define WIND_FREQUENCY 0.75
 
 #define ENABLE_ORIENTATION_CULLING 1
-#define ENABLE_FRUSTRUM_CULLING 1
+#define ENABLE_FRUSTUM_CULLING 1
 #define ENABLE_DISTANCE_CULLING 1
 
 #define ORIENTATION_CULLING_THRESHOLD 0.9
-#define FRUSTRUM_CULLING_PADDING 0.1
+#define FRUSTUM_CULLING_PADDING 0.1
 #define DISTANCE_CULLING_THRESHOLD 50.0
 #define DISTANCE_CULLING_NUM_BUCKETS 10
 
@@ -68,10 +68,10 @@ bool inBounds(float value, float bounds) {
     return (value >= -bounds) && (value <= bounds);
 }
 
-bool inViewFrustrum(vec3 pos) {
+bool inViewFrustum(vec3 pos) {
     vec4 clipPos = camera.proj * camera.view * vec4(pos, 1.0);
     clipPos /= clipPos.w;
-    float bounds = 1.0 + FRUSTRUM_CULLING_PADDING;
+    float bounds = 1.0 + FRUSTUM_CULLING_PADDING;
     return inBounds(clipPos.x, bounds) && inBounds(clipPos.y, bounds) && inBounds(clipPos.z, bounds);
 }
 
@@ -190,10 +190,10 @@ void main() {
     }
 #endif
 
-#if ENABLE_FRUSTRUM_CULLING
-    // View-Frustrum culling
+#if ENABLE_FRUSTUM_CULLING
+    // View-Frustum culling
     vec3 m = 0.25 * v0 + 0.5 * v1 + 0.25 * v2;
-    if (!inViewFrustrum(m) && !inViewFrustrum(v0) && !inViewFrustrum(v2)) {
+    if (!inViewFrustum(m) && !inViewFrustum(v0) && !inViewFrustum(v2)) {
         return;
     }
 #endif
